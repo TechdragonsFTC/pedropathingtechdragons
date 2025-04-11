@@ -21,20 +21,24 @@ public class autoAriba extends OpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
 
     private int pathState;
+    // x = lados
+    // y = frente e tras
 
     private final Pose startPose = new Pose(0, 71, Math.toRadians(0));
 
-    private final Pose ClipPose = new Pose(10, 71, Math.toRadians(0));
+    private final Pose ClipPose = new Pose(10, 71, Math.toRadians(0)); //clipa
 
     private final Pose move1 = new Pose(10, 30, Math.toRadians(0));
 
-    private final Pose move2 = new Pose(53, 30, Math.toRadians(0));
+    private final Pose move2 = new Pose(50, 30, Math.toRadians(0));
 
-    private final Pose move3 = new Pose(53, 15, Math.toRadians(0));
+    private final Pose move3 = new Pose(50, 15, Math.toRadians(0));// frente do primeiro sample
 
-    //private final Pose parkPose = new Pose(60, 98, Math.toRadians(90));
+    private final Pose move4 = new Pose(5, 15, Math.toRadians(0)); //empurra o sample
 
-    //private final Pose parkControlPose = new Pose(60, 98, Math.toRadians(90));
+    private final Pose move5 = new Pose(50, 15, Math.toRadians(0));
+    private final Pose move6 = new Pose(50,-10, Math.toRadians(0));// frente do segundo sample
+    private final Pose move7 = new Pose(5, -10, Math.toRadians(0));
 
     private Path scorePreload, park, clipa;
     private PathChain clipada, grabPickup2, grabPickup3, aposClip, scorePickup2, scorePickup3;
@@ -47,13 +51,27 @@ public class autoAriba extends OpMode {
         clipa.setConstantHeadingInterpolation(Math.toRadians(0));
 
         traj1 = follower.pathBuilder()
+                //vai para frente
                 .addPath(new BezierLine(new Point(startPose), new Point(ClipPose)))
                 .setTangentHeadingInterpolation()
+                //vai para o lado
                 .addPath(new BezierLine(new Point(ClipPose), new Point(move1)))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
+                //vai para frente próximo do sample
                 .addPath(new BezierLine(new Point(move1), new Point(move2)))
                 .setTangentHeadingInterpolation()
+                //vai para o lado na frente do sample
                 .addPath(new BezierLine(new Point(move2), new Point(move3)))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                //vai para tras empurrando o sample para o jogador
+                .addPath(new BezierLine(new Point(move3), new Point(move4)))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                //vai para frente para perto do próximo sample
+                .addPath(new BezierLine(new Point(move4), new Point(move5)))
+                .setTangentHeadingInterpolation()
+                .addPath(new BezierLine(new Point(move5), new Point(move6)))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(new Point(move6), new Point(move7)))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
