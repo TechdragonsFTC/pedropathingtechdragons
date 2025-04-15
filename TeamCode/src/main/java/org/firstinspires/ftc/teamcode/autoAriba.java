@@ -23,10 +23,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Autonomous(name = "Ariba mexico", group = "Examples")
 public class autoAriba extends OpMode {
 
-    public void subir(){    
+    public void subir(){
         Right
     }
-    public void descer(){}
+    public void descer(){
+        
+    }
     public void hold(){
 
         PIDFController controller;
