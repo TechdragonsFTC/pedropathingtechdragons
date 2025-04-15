@@ -125,6 +125,7 @@ public class autoAriba extends OpMode {
     }
 
     //controle das trajetórias
+
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
