@@ -15,11 +15,14 @@ import org.firstinspires.ftc.teamcode.constants.LConstants;
 //importações não referentes ao pedro pathing
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "Ariba", group = "Examples")
+
+@Autonomous(name = "Ariba mexico", group = "Examples")
 public class autoAriba extends OpMode {
 
-    atuadorTest servo = new atuadorTest();
+    private Servo garra; //servo da garra/ponta
+
     private Follower follower; //sla tbm
 
     private Timer pathTimer, actionTimer, opmodeTimer; //sla ja veio no código
@@ -102,9 +105,14 @@ public class autoAriba extends OpMode {
         switch (pathState) {
             //faz a trajetória
             case 0:
+
+                //inicia a trajetória
                 follower.followPath(traj1, true);
+
+                //troca para fazer nada
                 setPathState(1);
                 break;
+
                 //faz nada
             case 1:
                 if(!follower.isBusy()) {
@@ -112,7 +120,6 @@ public class autoAriba extends OpMode {
                     setPathState(-1);
                 }
                 break;
-            case 2:
 
         }
     }
@@ -128,6 +135,14 @@ public class autoAriba extends OpMode {
     @Override
     public void loop() {
 
+        Pose pose = follower.getPose();
+        if (pose.getX() == ClipPose.getX() && pose.getY() == ClipPose.getY()){
+
+
+            garra.setPosition(1.0);
+
+        }
+
         follower.update();
         autonomousPathUpdate();
 
@@ -141,12 +156,16 @@ public class autoAriba extends OpMode {
     //se precisar fazer alguma ação no init tem que por aq
     @Override
     public void init() {
+
+        garra = hardwareMap.get(Servo.class, "garra");
+        garra.setPosition(0); // posição inicial fechada
+
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
         Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap);
+        follower =  new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
         buildPaths();
     }
