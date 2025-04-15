@@ -146,7 +146,7 @@ public class autoAriba extends OpMode {
         opmodeTimer.resetTimer();
 
         Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
         buildPaths();
     }

@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.constants.FConstants;
 import org.firstinspires.ftc.teamcode.constants.LConstants;
@@ -28,18 +30,21 @@ import org.firstinspires.ftc.teamcode.constants.LConstants;
 public class TeleOp_Mundial extends OpMode {
     private Follower follower;
     DcMotorEx slide;
+
+    PID_Parameters pid;
+
     private final Pose startPose = new Pose(0,0,0);
 
     /** This method is call once when init is played, it initializes the follower **/
     @Override
     public void init() {
         Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
         slide = hardwareMap.get(DcMotorEx.class, "gobilda");
-        slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        pid = new PID_Parameters(1, 0, 0);
 
     }
 
@@ -71,21 +76,23 @@ public class TeleOp_Mundial extends OpMode {
 
     //TODO: Mover Slide
     public void moveSlide(){
-        double minPower = 0.1;
-        double maxPower = 0.6;
 
-        PController pController = new PController(1);
-        pController.setSetPoint(slide.getCurrentPosition());
-        pController.setInputRange(50, -3200);
-        pController.setOutputRange(minPower, maxPower);
+        double input = gamepad2.left_stick_y;
+        int holdPos = 0;
+        int currentPos = slide.getCurrentPosition();
 
-        if (gamepad2.left_stick_y > 0){
-            slide.setPower(minPower + pController.getComputedOutput(slide.getCurrentPosition()));
-        }else if(gamepad2.left_stick_y < 0){
-            slide.setPower(-(minPower + pController.getComputedOutput(slide.getCurrentPosition())));
-        }else if(gamepad2.left_stick_y == 0){
-            slide.setPower(minPower - pController.getComputedOutput(slide.getCurrentPosition()));
+        if (Math.abs(input) > 0.05){
+            slide.setPower(input);
+
+            holdPos = currentPos;
+            pid.reset();
+        }else {
+            double holdPower = pid.calculate(holdPos, currentPos);
+            slide.setPower(holdPower);
         }
+
+
+
     }
 
     //TODO: Mover base do atuador
