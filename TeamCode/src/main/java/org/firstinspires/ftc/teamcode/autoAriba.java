@@ -15,14 +15,62 @@ import org.firstinspires.ftc.teamcode.constants.LConstants;
 //importações não referentes ao pedro pathing
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
 @Autonomous(name = "Ariba mexico", group = "Examples")
 public class autoAriba extends OpMode {
 
-    private Servo garra; //servo da garra/ponta
+    public void subir(){
 
+        Right
+    }
+    public void descer(){}
+    public void hold(){
+
+        PIDFController controller;
+
+        double minPower = 0.2;
+        double maxPower = 0.5;
+        controller = new PIDFController(10, 3, 4, 12);
+        controller.setInputRange(-4000, 4000);
+        controller.setOutputRange(minPower, maxPower);
+
+        double powerM = maxPower + controller.getComputedOutput(Left.getCurrentPosition());
+        double powerM1 = maxPower + controller.getComputedOutput(Right.getCurrentPosition());
+
+        Left.setTargetPosition(Left.getCurrentPosition());
+        Right.setTargetPosition(Right.getCurrentPosition());
+
+        Left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        Left.setPower(powerM);
+        Right.setPower(powerM1);
+
+    }
+    public void extender( int target){
+
+        while (slide.getCurrentPosition() >= target){
+            slide.setTargetPosition(-target);
+            slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slide.setPower(-1.0);
+        }
+        slide.setPower(0.0);
+    }
+    public void recuar(int target){
+
+        while(slide.getCurrentPosition() >= target){
+            slide.setTargetPosition(target);
+            slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slide.setPower(1.0);
+        }
+        slide.setPower(0.0);
+    }
+    private DcMotorEx slide, Left, Right;
+    private Servo garra; //servo da garra/ponta
     private Follower follower; //sla tbm
 
     private Timer pathTimer, actionTimer, opmodeTimer; //sla ja veio no código
@@ -138,10 +186,21 @@ public class autoAriba extends OpMode {
 
         Pose pose = follower.getPose();
         if (pose.getX() == ClipPose.getX() && pose.getY() == ClipPose.getY()){
-
-
+            recuar(100);
             garra.setPosition(1.0);
+        }
 
+        if (follower.isBusy() && slide.getPower() < 0.3){
+            int currentPosition = slide.getCurrentPosition();
+
+            slide.setTargetPosition(currentPosition); // Define a posição atual como alvo
+            slide.setMode(DcMotor.RunMode.RUN_TO_POSITION); // Mantém o motor na posição
+            slide.setPower(0.1); // Aplica uma pequena potência para segurar a posição
+
+        }
+
+        if (follower.isBusy() && Left.getPower() < 0.3 && Right.getPower() < 0.3){
+            hold();
         }
 
         follower.update();
@@ -157,6 +216,8 @@ public class autoAriba extends OpMode {
     //se precisar fazer alguma ação no init tem que por aq
     @Override
     public void init() {
+
+        slide = hardwareMap.get(DcMotorEx.class, "gobilda");
 
         garra = hardwareMap.get(Servo.class, "garra");
         garra.setPosition(0); // posição inicial fechada
