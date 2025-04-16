@@ -23,11 +23,49 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Autonomous(name = "Ariba mexico", group = "Examples")
 public class autoAriba extends OpMode {
 
-    public void subir(){
-        Right
+    public void clipPos(){
+        leftS.setPosition(0.0);
+        rightS.setPosition(1.0);
+        clippos = true;
+        pickpos = false;
     }
-    public void descer(){
-        
+    public void pickPos(){
+        leftS.setPosition(1.0);
+        rightS.setPosition(0.0);
+        clippos = false;
+        pickpos = true;
+    }
+    public void closed(){
+        garra.setPosition(0.0);
+        isopen = false;
+    }
+    public void open(){
+        garra.setPosition(1.0);
+        isopen = true;
+    }
+    public void subir(int target){
+
+        while (Left.getCurrentPosition() <= -target && Right.getCurrentPosition() <= target){
+            Left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            Left.setTargetPosition(-target);
+            Right.setTargetPosition(target);
+
+            Left.setPower(-1);
+            Right.setPower(1);}
+    }
+    public void descer(int target){
+
+        while (Left.getCurrentPosition() >= -target && Right.getCurrentPosition() >= target){
+            Left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            Right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            Left.setTargetPosition(target);
+            Right.setTargetPosition(-target);
+
+            Left.setPower(1);
+            Right.setPower(-1);}
     }
     public void hold(){
 
@@ -70,15 +108,14 @@ public class autoAriba extends OpMode {
         }
         slide.setPower(0.0);
     }
+
+    boolean isopen, clippos, pickpos;
     private DcMotorEx slide, Left, Right;
     private Servo garra; //servo da garra/ponta
+    private Servo leftS, rightS;
     private Follower follower; //sla tbm
-
-    private Timer pathTimer, actionTimer, opmodeTimer; //sla ja veio no código
-
+    private Timer pathTimer, opmodeTimer; //sla ja veio no código
     private int pathState; //variável de controle das trajetórias e ações
-
-
     // y = lados (se for maior vai para a direita)
     // x = frente e tras (se for maior vai para frente)
     private final Pose startPose = new Pose(0, 71, Math.toRadians(180)); //posição inicial do robô
@@ -94,7 +131,6 @@ public class autoAriba extends OpMode {
     private final Pose move9 = new Pose(50, -30, Math.toRadians(180)); //foi para a direita na frente do terceiro sample
     private final Pose move10 = new Pose(5, -30, Math.toRadians(180)); //empurrou o terceiro sample para a area do jogador humano
     private final Pose move11 = new Pose(30, -30, Math.toRadians(180)); // voltou para frente
-
     private PathChain traj1; //conjunto de trajetórias
     public void buildPaths() {
 
@@ -174,12 +210,10 @@ public class autoAriba extends OpMode {
     }
 
     //controle das trajetórias
-
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
     }
-
 
     //loop
     @Override
@@ -187,8 +221,14 @@ public class autoAriba extends OpMode {
 
         Pose pose = follower.getPose();
         if (pose.getX() == ClipPose.getX() && pose.getY() == ClipPose.getY()){
+            subir(100);
+            descer(100);
+            extender(100);
             recuar(100);
-            garra.setPosition(1.0);
+            open();
+            closed();
+            clipPos();
+            pickPos();
         }
 
         if (follower.isBusy() && slide.getPower() < 0.3){
@@ -199,9 +239,19 @@ public class autoAriba extends OpMode {
             slide.setPower(0.1); // Aplica uma pequena potência para segurar a posição
 
         }
-
         if (follower.isBusy() && Left.getPower() < 0.3 && Right.getPower() < 0.3){
             hold();
+        }
+        if (isopen = false){
+            garra.setPosition(0.0);
+        }
+        if (clippos = true){
+            leftS.setPosition(0.0);
+            rightS.setPosition(1.0);
+        }
+        if (pickpos = true){
+            leftS.setPosition(1.0);
+            rightS.setPosition(0.0);
         }
 
         follower.update();
@@ -218,10 +268,17 @@ public class autoAriba extends OpMode {
     @Override
     public void init() {
 
-        slide = hardwareMap.get(DcMotorEx.class, "gobilda");
+        leftS.setPosition(0.0);
+        rightS.setPosition(1.0);
 
+        isopen = false;
+
+        slide = hardwareMap.get(DcMotorEx.class, "gobilda");
+        leftS = hardwareMap.get(Servo.class, "lservo");
+        rightS = hardwareMap.get(Servo.class, "rservo");
         garra = hardwareMap.get(Servo.class, "garra");
-        garra.setPosition(0); // posição inicial fechada
+        Left = hardwareMap.get(DcMotorEx.class, "Left");
+        Right = hardwareMap.get(DcMotorEx.class, "Right");
 
         pathTimer = new Timer();
         opmodeTimer = new Timer();
