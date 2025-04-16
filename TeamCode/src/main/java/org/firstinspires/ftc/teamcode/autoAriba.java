@@ -292,7 +292,9 @@ public class autoAriba extends OpMode {
 
     //só um loop pra quando dar init
     @Override
-    public void init_loop() {}
+    public void init_loop() {
+        
+    }
 
     //quando começar ele define a variável de controle como 0 e ja começa as ações
     @Override
