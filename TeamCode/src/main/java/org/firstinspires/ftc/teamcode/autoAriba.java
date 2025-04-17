@@ -26,22 +26,32 @@ public class autoAriba extends OpMode {
     public void clipPos(){
         leftS.setPosition(0.0);
         rightS.setPosition(1.0);
-        clippos = true;
-        pickpos = false;
+        clippos = 1;
+        pickpos = 0;
+        specimenpickpos = 0;
     }
     public void pickPos(){
         leftS.setPosition(1.0);
         rightS.setPosition(0.0);
-        clippos = false;
-        pickpos = true;
+        clippos = 0;
+        pickpos = 1;
+        specimenpickpos = 0;
+
+    }
+    public void specimenPickpos(){
+        leftS.setPosition(0.6);
+        rightS.setPosition(0.4);
+        clippos = 0;
+        pickpos= 0;
+        specimenpickpos = 0;
     }
     public void closed(){
         garra.setPosition(0.0);
-        isopen = false;
+        isopen = 0;
     }
     public void open(){
-        garra.setPosition(1.0);
-        isopen = true;
+        garra.setPosition(0.6);
+        isopen = 1;
     }
     public void subir(int target){
 
@@ -108,8 +118,8 @@ public class autoAriba extends OpMode {
         }
         slide.setPower(0.0);
     }
-
-    boolean isopen, clippos, pickpos;
+    int isopen;
+    int  specimenpickpos, clippos, pickpos;
     private DcMotorEx slide, Left, Right;
     private Servo garra; //servo da garra/ponta
     private Servo leftS, rightS;
@@ -221,14 +231,8 @@ public class autoAriba extends OpMode {
 
         Pose pose = follower.getPose();
         if (pose.getX() == ClipPose.getX() && pose.getY() == ClipPose.getY()){
-            subir(100);
-            descer(100);
-            extender(100);
-            recuar(100);
+
             open();
-            closed();
-            clipPos();
-            pickPos();
         }
 
         if (follower.isBusy() && slide.getPower() < 0.3){
@@ -242,16 +246,20 @@ public class autoAriba extends OpMode {
         if (follower.isBusy() && Left.getPower() < 0.3 && Right.getPower() < 0.3){
             hold();
         }
-        if (isopen = false){
+        if (isopen == 0){
             garra.setPosition(0.0);
         }
-        if (clippos = true){
+        if (clippos == 1){
             leftS.setPosition(0.0);
             rightS.setPosition(1.0);
         }
-        if (pickpos = true){
+        if (pickpos == 1){
             leftS.setPosition(1.0);
             rightS.setPosition(0.0);
+        }
+        if (specimenpickpos == 1){
+            leftS.setPosition(0);
+            rightS.setPosition(0);
         }
 
         follower.update();
@@ -268,10 +276,7 @@ public class autoAriba extends OpMode {
     @Override
     public void init() {
 
-        leftS.setPosition(0.0);
-        rightS.setPosition(1.0);
-
-        isopen = false;
+        isopen = 0;
 
         slide = hardwareMap.get(DcMotorEx.class, "gobilda");
         leftS = hardwareMap.get(Servo.class, "lservo");
@@ -293,7 +298,7 @@ public class autoAriba extends OpMode {
     //só um loop pra quando dar init
     @Override
     public void init_loop() {
-        
+
     }
 
     //quando começar ele define a variável de controle como 0 e ja começa as ações
